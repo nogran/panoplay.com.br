@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>Conectando ao Pano Play…</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 36rem; margin: 4rem auto; padding: 0 1rem; color: #1f1f1f; }
+  code { display: block; word-break: break-all; background: #f3f3f3; padding: .75rem; border-radius: .4rem; }
+  button, a.button { font: inherit; padding: .6rem 1rem; border-radius: .4rem; border: 1px solid #1f1f1f; background: #fff; cursor: pointer; text-decoration: none; color: inherit; display: inline-block; margin-top: .75rem; }
+  [hidden] { display: none; }
+</style>
+</head>
+<body>
+<h1>Conectando ao Pano Play…</h1>
+<p id="status">Levando a autorização do Mercado Livre para o sistema neste computador.</p>
+<div id="fallback" hidden>
+  <p>Se nada aconteceu, o navegador bloqueou o repasse. Abra o link abaixo ou copie o endereço e cole na tela de conexão do Pano Play.</p>
+  <a class="button" id="open" href="#">Concluir conexão</a>
+  <button type="button" id="copy">Copiar endereço</button>
+  <code id="address"></code>
+</div>
+<script>
+  // Repassa code e state ao backend local. Nada é enviado a outro lugar nem guardado.
+  (function () {
+    var LOCAL = 'http://127.0.0.1:8765/api/mercadolivre/callback';
+    var query = new URLSearchParams(location.search);
+    var keep = new URLSearchParams();
+    ['code', 'state', 'error', 'error_description'].forEach(function (name) {
+      if (query.has(name)) keep.set(name, query.get(name));
+    });
+    var status = document.getElementById('status');
+    if (!keep.has('code') && !keep.has('error')) {
+      status.textContent = 'Esta página só é usada no retorno da autorização do Mercado Livre.';
+      return;
+    }
+    var target = LOCAL + '?' + keep.toString();
+    document.getElementById('open').href = target;
+    document.getElementById('address').textContent = location.href;
+    document.getElementById('copy').onclick = function () {
+      navigator.clipboard.writeText(location.href).then(function () {
+        document.getElementById('copy').textContent = 'Endereço copiado';
+      });
+    };
+    setTimeout(function () { document.getElementById('fallback').hidden = false; }, 2500);
+    location.replace(target);
+  })();
+</script>
+</body>
+</html>
